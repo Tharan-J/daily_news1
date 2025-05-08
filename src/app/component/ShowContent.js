@@ -149,40 +149,54 @@ export default function AllData({ user_id }) {
 
       {/* Magazine generation result notification */}
       {magazineResult && (
-        <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded mb-4">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="font-medium">Magazine generated successfully!</p>
-              <div className="mt-2">
-                <a 
-                  href={magazineResult.pdfPath} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-purple-600 hover:text-purple-800 underline mr-4"
-                >
-                  Download PDF
-                </a>
-                {magazineResult.mainPage && (
-                  <a 
-                    href={magazineResult.mainPage} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-purple-600 hover:text-purple-800 underline"
-                  >
-                    View HTML
-                  </a>
-                )}
-              </div>
-            </div>
-            <button 
-              onClick={() => setMagazineResult(null)}
-              className="text-green-800 hover:text-green-900"
+  <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded mb-4">
+    <div className="flex justify-between items-start">
+      <div>
+        <p className="font-medium">Magazine generated successfully!</p>
+        <div className="mt-2 space-x-4">
+          <a 
+            href={magazineResult.pdfPath} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-purple-600 hover:text-purple-800 underline"
+          >
+            Download PDF
+          </a>
+
+          {magazineResult.mainPage && (
+            <a 
+              href={magazineResult.mainPage} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-purple-600 hover:text-purple-800 underline"
             >
-              <X size={18} />
+              View HTML
+            </a>
+          )}
+
+          {/* 🚀 Show Magazine button */}
+          {magazineResult.pdfPath && (
+            <button
+              onClick={() => {
+                const flipbookUrl = `/flipbook?pdf=${encodeURIComponent(magazineResult.pdfPath)}`;
+                window.open(flipbookUrl, "_blank");
+              }}
+              className="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700 transition"
+            >
+              Show Magazine
             </button>
-          </div>
+          )}
         </div>
-      )}
+      </div>
+      <button 
+        onClick={() => setMagazineResult(null)}
+        className="text-green-800 hover:text-green-900"
+      >
+        <X size={18} />
+      </button>
+    </div>
+  </div>
+)}
 
       <form
         onSubmit={handleSearch}

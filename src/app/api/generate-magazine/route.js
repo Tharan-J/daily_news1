@@ -2,9 +2,10 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
 import fs from "fs/promises";
 import path from "path";
-import { writeFile } from "fs/promises";
 import { v4 as uuidv4 } from "uuid";
 import puppeteer from "puppeteer";
+import { PDFDocument } from 'pdf-lib';
+import fsExtra from 'fs-extra';
 
 // Import HTML templates
 import MainTemplate from "../../component/MainTemplate";
@@ -54,18 +55,16 @@ async function saveMultipleHtmlPages(aiResponse, outputDir) {
 }
 
 /**
- * Generates a PDF from a folder of HTML files with proper formatting
+ * Generates a PDF from a folder of HTML files using Puppeteer
  * @param {string} htmlDir - Directory containing HTML files
  * @param {string} outputFilename - Name of the output PDF file
  * @returns {Promise<string>} - Path to the generated PDF file
  */
 async function generatePdfFromHtmlDir(htmlDir, outputFilename) {
   try {
-    // Get all HTML files in the directory
     const files = await fs.readdir(htmlDir);
     const htmlFiles = files
       .filter((file) => file.endsWith(".html"))
-      // Sort files naturally if they are numbered (page1.html, page2.html, etc.)
       .sort((a, b) => {
         const numA = parseInt(a.match(/\d+/) || [0]);
         const numB = parseInt(b.match(/\d+/) || [0]);
@@ -76,145 +75,105 @@ async function generatePdfFromHtmlDir(htmlDir, outputFilename) {
       throw new Error("No HTML files found in the directory");
     }
 
-    // Ensure the directory for PDFs exists
     const pdfDir = path.join(process.cwd(), "public", "pdfs");
     await fs.mkdir(pdfDir, { recursive: true });
-
-    // Generate PDF path
     const pdfPath = path.join(pdfDir, outputFilename);
-
-    // Launch a headless browser with specific settings
+    
+    // Launch Puppeteer
     const browser = await puppeteer.launch({
-      headless: "new",
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      headless: "new", // Use new headless mode
     });
-
-    // Create a new page with A4 dimensions
+    
     const page = await browser.newPage();
-    await page.setViewport({
-      width: 1000,
-      height: 1400,
-      deviceScaleFactor: 2,
+    
+    // Create a single PDF from multiple HTML files
+    const pdfBuffer = await createPdfFromMultipleHtml(browser, page, htmlDir, htmlFiles);
+    
+    // Save the PDF buffer to file
+    await fs.writeFile(pdfPath, pdfBuffer);
+    
+    await browser.close();
+    
+    console.log("PDF saved to:", pdfPath);
+    return `/pdfs/${outputFilename}`; // Return public path
+    
+  } catch (err) {
+    console.error("PDF generation failed:", err);
+    throw err;
+  }
+}
+
+/**
+ * Creates a single PDF from multiple HTML files
+ * @param {Browser} browser - Puppeteer browser instance
+ * @param {Page} page - Puppeteer page instance
+ * @param {string} htmlDir - Directory containing HTML files
+ * @param {string[]} htmlFiles - Array of HTML filenames
+ * @returns {Promise<Buffer>} - PDF buffer
+ */
+async function createPdfFromMultipleHtml(browser, page, htmlDir, htmlFiles) {
+  await page.setViewport({
+    width: 794, // A4 width in pixels at 96 DPI
+    height: 1123,
+  });
+
+  const pdfBuffers = [];
+
+  for (const file of htmlFiles) {
+    const filePath = path.join(htmlDir, file);
+    const fileContent = await fs.readFile(filePath, 'utf-8');
+
+    const modifiedContent = fileContent.replace(
+      /src=["']\/public\/uploads\/(.*?)["']/g,
+      'src="http://localhost:3000/uploads/$1"'
+    ).replace(
+      /src=["']\/uploads\/(.*?)["']/g,
+      'src="http://localhost:3000/uploads/$1"'
+    );
+
+    await page.setContent(modifiedContent, {
+      waitUntil: 'networkidle0',
     });
 
-    // Set custom styles for PDF output
-    const styles = `
-      @page {
-        margin: 0;
-        size: A4;
-      }
-      body {
-        margin: 0;
-        padding: 0;
-        font-family: Arial, Helvetica, sans-serif;
-      }
-      .pdf-page {
-        width: 100%;
-        height: 100%;
-        page-break-after: always;
-        position: relative;
-        box-sizing: border-box;
-        padding: 30px;
-      }
-      .pdf-page:last-child {
-        page-break-after: avoid;
-      }
-      img {
-        max-width: 100%;
-        height: auto;
-      }
-      .header, .footer {
-        padding: 5px 30px;
-        text-align: center;
-      }
-      .header {
-        border-bottom: 1px solid #ddd;
-      }
-      .footer {
-        border-top: 1px solid #ddd;
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-      }
-    `;
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: {
+        top: '0mm',
+        right: '0mm',
+        bottom: '0mm',
+        left: '0mm',
+      },
+    });
 
-    // Process each HTML file into a PDF
-    const pdfs = [];
-    for (const file of htmlFiles) {
-      const filePath = path.join(htmlDir, file);
-      console.log(`Processing file: ${filePath}`);
+    pdfBuffers.push(pdfBuffer);
+  }
 
-      // Read the HTML content
-      const htmlContent = await fs.readFile(filePath, "utf-8");
+  if (pdfBuffers.length === 1) {
+    return pdfBuffers[0];
+  }
 
-      // Create a temporary file path for each page's PDF
-      const tempPdfPath = path.join(
-        pdfDir,
-        `temp_${file.replace(".html", ".pdf")}`
-      );
+  // Merge all PDFs using pdf-lib
+  const mergedPdf = await PDFDocument.create();
 
-      // Navigate to a blank page
-      await page.goto("about:blank");
+  for (const pdfBuffer of pdfBuffers) {
+    const pdf = await PDFDocument.load(pdfBuffer);
+    const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+    copiedPages.forEach((page) => mergedPdf.addPage(page));
+  }
 
-      // Set the content with styles
-      await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+  return await mergedPdf.save(); // returns merged PDF buffer
+}
 
-      // Ensure images are loaded
-      await page.evaluateHandle("document.fonts.ready");
-
-      // Generate PDF for this page
-      await page.pdf({
-        path: tempPdfPath,
-        width: "1000px",
-        height: "1400px",
-        printBackground: true,
-        margin: { top: "0px", right: "0px", bottom: "0px", left: "0px" },
-      });
-
-      pdfs.push(tempPdfPath);
-    }
-
-    // Merge PDFs if there are multiple pages
-    if (pdfs.length > 1) {
-      // Use Puppeteer to merge PDFs
-      // For production, consider using a dedicated PDF library like pdf-lib or pdf-merge
-      const { PDFDocument } = await import("pdf-lib");
-
-      const mergedPdf = await PDFDocument.create();
-
-      for (const pdfPath of pdfs) {
-        const pdfBytes = await fs.readFile(pdfPath);
-        const pdf = await PDFDocument.load(pdfBytes);
-        const copiedPages = await mergedPdf.copyPages(
-          pdf,
-          pdf.getPageIndices()
-        );
-        copiedPages.forEach((page) => mergedPdf.addPage(page));
-      }
-
-      const mergedPdfBytes = await mergedPdf.save();
-      await fs.writeFile(pdfPath, mergedPdfBytes);
-
-      // Clean up temporary PDFs
-      for (const tempPdf of pdfs) {
-        await fs.unlink(tempPdf);
-      }
-    } else if (pdfs.length === 1) {
-      // Just rename the single PDF
-      await fs.rename(pdfs[0], pdfPath);
-    }
-
-    // Close browser
-    await browser.close();
-
-    console.log(`✅ Combined PDF saved as ${pdfPath}`);
-
-    // Return the public path to the PDF
-    return `/pdfs/${outputFilename}`;
+async function savePdfToFileSystem(pdfBuffer, pdfFullPath) {
+  try {
+    // Ensure the directory exists, and save the PDF
+    await fsExtra.outputFile(pdfFullPath, pdfBuffer); // Write PDF buffer to file
+    console.log(`PDF saved to: ${pdfFullPath}`);
+    return path.basename(pdfFullPath);
   } catch (error) {
-    console.error("Error generating PDF:", error);
-    throw error;
+    console.error('Error saving PDF:', error);
+    throw error;  // rethrow the error so it can be caught in the calling function
   }
 }
 
@@ -347,9 +306,9 @@ export async function POST(req) {
         const buffer = Buffer.from(await imageFile.arrayBuffer());
 
         // Save the file
-        await writeFile(filePath, buffer);
+        await fs.writeFile(filePath, buffer);
 
-        // Store the public path
+        // Store the public path - this works with Next.js static file serving
         imagePath = `/uploads/${fileName}`;
         imageFilePaths.push(imagePath);
       }
@@ -455,7 +414,7 @@ Edit
 <html>
 ...full HTML content for page 2...
 </html>
-Inside the first page’s header:
+Inside the first page's header:
 Replace the following block:
 
 html
@@ -473,7 +432,7 @@ Edit
 placement | day skill | <topic 3> | <topic 4>
 Based on the major themes in the news titles.
 
-Replace image variables like {{NEWS_IMAGE_SRC}}, {{NEWS_IMAGE_SRC_1}}, etc. with the corresponding actual image path values from each news item (e.g., /uploads/xyz.jpg). Do not generate placeholder images or leave them empty.
+Replace image variables like {{NEWS_IMAGE_SRC}}, {{NEWS_IMAGE_SRC_1}}, etc. with the corresponding actual image path values from each news item (e.g., http://localhost:3000/uploads/xyz.jpg). Do not generate placeholder images or leave them empty.
 
 Include CSS suitable for PDF output:
 
@@ -498,7 +457,7 @@ Return only valid HTML content, no markdown, no extra comments.
         .toLowerCase()
         .replace(/[^a-z0-9]/g, "-")
         .replace(/-+/g, "-")
-        .trim("-") +
+        .replace(/^-|-$/g, "") +
       "-" +
       Date.now();
 
@@ -510,11 +469,11 @@ Return only valid HTML content, no markdown, no extra comments.
 
     // Save multiple HTML pages
     const savedPages = await saveMultipleHtmlPages(generatedHtml, outputDir);
-
+    
     // Generate PDF from the HTML pages
     const pdfFilename = `${safeFolderName}.pdf`;
     const pdfPath = await generatePdfFromHtmlDir(outputDir, pdfFilename);
-
+    
     // Include image references in response data
     const newsItemsWithImageInfo = newsItems.map((item) => ({
       title: item.title,
@@ -528,7 +487,7 @@ Return only valid HTML content, no markdown, no extra comments.
         success: true,
         pages: savedPages,
         mainPage: savedPages.length > 0 ? savedPages[0].path : null,
-        pdfPath: pdfPath, // Add the PDF path to the response
+        pdfPath, // Add the PDF path to the response
         newsItems: newsItemsWithImageInfo,
         images: imageFilePaths,
       }),

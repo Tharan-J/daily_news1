@@ -132,7 +132,7 @@ const MainTemplate = {
       </div>
       <div class="header-title-row">
         <span class="header-title">Daily</span>
-        <img class="header-logo-center" src="{{LOGO_SRC}}" alt="BIT Logo" />
+        <img class="header-logo-center" src="/uploads/logo.png" alt="BIT Logo" />
         <span class="header-title2">News</span>
       </div>
       <div class="header-issue">
