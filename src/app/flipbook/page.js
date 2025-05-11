@@ -1,42 +1,124 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import dynamic from 'next/dynamic';
-
-// Dynamically import the FlipbookViewer component to avoid SSR issues
-const FlipbookViewer = dynamic(() => import('../component/FlipbookViewer'), {
-  ssr: false,
-  loading: () => <div className="text-center py-20">Loading viewer...</div>
-});
+"use client";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function FlipbookPage() {
   const searchParams = useSearchParams();
-  const pdfPath = searchParams.get('pdf');
-  const [isClient, setIsClient] = useState(false);
-  
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const [flipbookUrl, setFlipbookUrl] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [iframeLoaded, setIframeLoaded] = useState(false);
 
-  if (!pdfPath) {
+  useEffect(() => {
+    const convertToFlipbook = async () => {
+      try {
+        const pdfPath = searchParams.get("pdf");
+        if (!pdfPath) {
+          throw new Error("No PDF path provided");
+        }
+
+        const response = await fetch("/api/heyzine", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ pdfPath }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          console.log("Flipbook URL:", data.flipbookUrl);
+          setFlipbookUrl(data.flipbookUrl);
+        } else {
+          throw new Error(data.error || "Failed to convert PDF to flipbook");
+        }
+      } catch (err) {
+        console.error("Error:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    convertToFlipbook();
+  }, [searchParams]);
+
+  const handleIframeLoad = () => {
+    console.log("Iframe loaded");
+    setIframeLoaded(true);
+  };
+
+  const handleIframeError = () => {
+    console.error("Iframe failed to load");
+    setError("Failed to load flipbook content");
+  };
+
+  if (loading) {
     return (
-      <div className="container mx-auto p-8 text-center">
-        <h1 className="text-2xl font-bold text-red-500">Error: No PDF specified</h1>
-        <p className="mt-4">Please specify a PDF file using the 'pdf' query parameter.</p>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">
+            Converting your magazine to flipbook...
+          </p>
+        </div>
       </div>
     );
   }
 
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6 text-center">PDF Flipbook</h1>
-      
-      {isClient && (
-        <div className="flex justify-center">
-          <FlipbookViewer pdfUrl={pdfPath} />
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Error: {error}</p>
+          <button
+            onClick={() => window.history.back()}
+            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition"
+          >
+            Go Back
+          </button>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+  }
+
+  if (flipbookUrl) {
+    return (
+      <div className="min-h-screen w-full flex flex-col">
+        {!iframeLoaded && (
+          <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading flipbook...</p>
+            </div>
+          </div>
+        )}
+        <div className="flex-1 w-full h-full">
+          <iframe
+            src={flipbookUrl}
+            className="w-full h-full border-0"
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: "100%",
+              height: "100%",
+              border: "none",
+              margin: 0,
+              padding: 0,
+              overflow: "hidden",
+            }}
+            onLoad={handleIframeLoad}
+            onError={handleIframeError}
+            allowFullScreen
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }

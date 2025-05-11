@@ -9,6 +9,7 @@ export async function POST(request) {
     if (contentType.includes("multipart/form-data")) {
       // Parse the FormData
       const formData = await request.formData();
+      console.log(formData);
 
       // Extract user info
       const uploaded_by = formData.get("uploaded_by");
@@ -38,6 +39,12 @@ export async function POST(request) {
           { status: 400 }
         );
       }
+
+      // Check if user is admin (user_id equals "admin")
+      const isAdmin = uploaded_by === "admin";
+      
+      // Set status based on user role
+      const status = isAdmin ? 'approved' : 'pending';
 
       // Current date for all entries
       const currentDate = new Date().toISOString().split("T")[0];
@@ -71,27 +78,29 @@ export async function POST(request) {
           }
         }
 
-        // Insert data into the database - removed Page_no field
+        // Insert data into the news table with status based on user role
         const [result] = await connection.execute(
-          "INSERT INTO news (date, title, image, content, uploaded_by) VALUES (?, ?, ?, ?, ?)",
+          "INSERT INTO news (date, title, image, content, uploaded_by, status, submitted_at) VALUES (?, ?, ?, ?, ?, ?, NOW())",
           [
             currentDate,
             entry.title,
             imageBuffer,
             entry.content || "",
             uploaded_by,
+            status, // Use the dynamic status here
           ]
         );
 
         results.push({
           id: result.insertId,
           title: entry.title,
+          status: status, // Return the actual status
         });
       }
 
       return NextResponse.json({
         success: true,
-        message: `Successfully saved ${results.length} entries!`,
+        message: `Successfully ${status === 'approved' ? 'published' : 'submitted for review'}! ${results.length} entries ${status === 'approved' ? 'added to news feed' : 'pending approval'}.`,
         results: results,
       });
     } else {
@@ -109,6 +118,12 @@ export async function POST(request) {
         );
       }
 
+      // Check if user is admin (user_id equals "admin")
+      const isAdmin = uploaded_by === "admin";
+      
+      // Set status based on user role
+      const status = isAdmin ? 'approved' : 'pending';
+
       // Convert base64 image to buffer if it exists
       let imageBuffer = null;
       if (imageBase64 && imageBase64.startsWith("data:image")) {
@@ -119,16 +134,19 @@ export async function POST(request) {
       // Current date for the date field
       const currentDate = new Date().toISOString().split("T")[0];
 
-      // Insert data into the database - removed Page_no field
+      // Insert data into the news table with status based on user role
       const [result] = await connection.execute(
-        "INSERT INTO news (date, title, image, content, uploaded_by) VALUES (?, ?, ?, ?, ?)",
-        [currentDate, title, imageBuffer, content || "", uploaded_by]
+        "INSERT INTO news (date, title, image, content, uploaded_by, status, submitted_at) VALUES (?, ?, ?, ?, ?, ?, NOW())",
+        [currentDate, title, imageBuffer, content || "", uploaded_by, status]
       );
 
       return NextResponse.json({
         success: true,
-        message: "Document saved successfully!",
+        message: status === 'approved' 
+          ? "Document published successfully!" 
+          : "Document submitted for review!",
         id: result.insertId,
+        status: status,
       });
     }
   } catch (error) {

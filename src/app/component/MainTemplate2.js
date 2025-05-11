@@ -42,20 +42,32 @@ const baseHtml = `
             padding: 15px;
             border-radius: 5px;
         }
+        .news-item.large {
+            grid-column: 1 / -1;
+        }
         .news-item img {
             width: 100%;
             height: 200px;
             object-fit: cover;
             margin-bottom: 10px;
         }
+        .news-item.large img {
+            height: 300px;
+        }
         .news-item h2 {
             margin: 0 0 10px 0;
             font-size: 18px;
+        }
+        .news-item.large h2 {
+            font-size: 24px;
         }
         .news-item p {
             margin: 0;
             font-size: 14px;
             line-height: 1.5;
+        }
+        .news-item.large p {
+            font-size: 16px;
         }
         .footer {
             text-align: center;
@@ -78,7 +90,7 @@ const baseHtml = `
         <h2>{{ISSUE_SUMMARY}}</h2>
     </div>
     <div class="main-news">
-        <div class="news-item">
+        <div class="news-item large">
             <img src="{{NEWS_IMAGE_SRC}}" alt="{{NEWS_TITLE}}">
             <h2>{{NEWS_TITLE}}</h2>
             <p>{{NEWS_DESCRIPTION}}</p>
@@ -89,6 +101,12 @@ const baseHtml = `
             <h2>{{NEWS_TITLE_2}}</h2>
             <p>{{NEWS_DESCRIPTION_2}}</p>
             <div class="ref">{{NEWS_REF_2}}</div>
+        </div>
+        <div class="news-item">
+            <img src="{{NEWS_IMAGE_SRC_3}}" alt="{{NEWS_TITLE_3}}">
+            <h2>{{NEWS_TITLE_3}}</h2>
+            <p>{{NEWS_DESCRIPTION_3}}</p>
+            <div class="ref">{{NEWS_REF_3}}</div>
         </div>
     </div>
     <div class="footer">

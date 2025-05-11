@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>BITSATHY DailyNews</title>
+    <style>
+      body {
+        font-family: "Times New Roman", Times, serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+      }
+
+      .page {
+        width: 100%;
+        max-width: 210mm; /* A4 width */
+        margin: 0 auto;
+        padding: 20px;
+        position: relative;
+        min-height: 297mm; /* A4 height */
+      }
+
+      .page-number-box {
+        position: absolute;
+        top: 10px;
+        right: 30px;
+        border: 2px solid #006666;
+        padding: 2px 8px;
+        font-weight: bold;
+        color: black;
+        z-index: 2;
+      }
+
+      .header-line {
+        position: absolute;
+        top: 37px;
+        left: 20px;
+        right: 20px;
+        border-top: 2.5px solid #006666;
+      }
+
+      .footer-line {
+        border-top: 2px solid #006666;
+        position: fixed;
+        bottom: 35px;
+        left: 20px;
+        right: 20px;
+        margin-top: 0;
+      }
+
+      .section-title {
+        background-color: #b8d1f3;
+        border: 3px solid #7898c6;
+        text-align: center;
+        padding: 10px;
+        font-size: 24px;
+        color: #00005a;
+        font-weight: bold;
+        margin: 20px 0;
+      }
+
+      .news-title {
+        color: #00005a;
+        font-size: 20px;
+        margin: 15px 0 10px 0;
+      }
+
+      .news-item {
+        margin-bottom: 30px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .news-row,
+      .news-row-reverse {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+      }
+
+      .news-row-reverse {
+        flex-direction: row-reverse;
+      }
+
+      .news-image {
+        width: 250px;
+        height: auto;
+        border: 1px solid #999;
+        object-fit: cover;
+      }
+
+      .news-text {
+        text-align: justify;
+        font-size: 14px;
+        line-height: 1.5;
+        flex: 1;
+      }
+
+      .news-caption {
+        font-size: 10px;
+        text-align: center;
+        font-style: italic;
+        color: #555;
+        margin-top: 4px;
+      }
+
+      .news-ref {
+        font-size: 12px;
+        color: #555;
+        text-align: right;
+      }
+
+      .footer-text {
+        font-weight: bold;
+        color: white;
+        background-color: #006666;
+        padding: 5px 15px;
+        position: fixed;
+        bottom: 4px;
+        right: 30px;
+      }
+
+      @media print {
+        body {
+          background-color: white;
+        }
+        .page {
+          width: 210mm;
+          height: 297mm;
+          margin: 0;
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="page-number-box">1</div>
+      <div class="header-line"></div>
+      <h1 class="section-title">Daily News</h1>
+      <h2 class="news-title">News Title</h2>
+      <div class="news-item">
+        <div class="news-row">
+          <img class="news-image" src="news-image.jpg" alt="News Image" />
+          <p class="news-text">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
+            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+            aliquip ex ea commodo consequat.
+          </p>
+        </div>
+        <p class="news-caption">News Caption</p>
+        <p class="news-ref">News Reference</p>
+      </div>
+      <div class="footer-line"></div>
+      <div class="footer-text">© 2024 BITSATHY DailyNews</div>
+    </div>
+  </body>
+</html>

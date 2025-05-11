@@ -9,6 +9,7 @@ const google = createGoogleGenerativeAI({
 export async function POST(req) {
   try {
     const { prompt } = await req.json();
+    console.log(prompt);
 
     if (!prompt) {
       return NextResponse.json(
@@ -22,12 +23,11 @@ export async function POST(req) {
       model: google("gemini-2.0-flash"),
       schema: z.object({
         title: z.string().min(1, "Title is required"),
-        userId: z.string().min(1, "User ID is required"),
         content: z.string().min(1, "Content is required"),
       }),
       system: `
 persona:your are a personal assistant that helps users to find the best prompt for their needs.,
-objectives:your objective is to refine the content guiven by the user and provide a simple and clear content enhance the content dont give any extra things 
+objectives:your objective is to complete the content given by the user and provide a simple and clear content 
 instructions:     
 ***you are programmed to enhance the content for bitsathy daily news and make it clear and simple.***
 ***so function like a content enhancer for the daily news.***
@@ -38,7 +38,7 @@ instructions:
       prompt: JSON.stringify(prompt),
     });
     
-    return NextResponse.json({ content: object });
+    return NextResponse.json( object );
   } catch (error) {
     console.error("Error generating content:", error);
     return NextResponse.json(
