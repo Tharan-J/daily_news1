@@ -258,6 +258,10 @@ export default function AllData({ user_id }) {
     }
   };
 
+  if (loading) {
+    return <div className="loading-spinner"></div>;
+  }
+
   return (
     <div className="min-h-screen bg-white text-black container mx-auto px-4 py-8 relative">
       <Head>
@@ -327,7 +331,7 @@ export default function AllData({ user_id }) {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search by title, content or author..."
-              className="flex-grow p-2 border border-gray-300 rounded text-black"
+              className="input"
             />
           </div>
 
@@ -341,7 +345,7 @@ export default function AllData({ user_id }) {
                 startDate={startDate}
                 endDate={endDate}
                 placeholderText="Start Date"
-                className="p-2 border border-gray-300 rounded text-black w-full"
+                className="input"
               />
               <Calendar
                 size={16}
@@ -358,7 +362,7 @@ export default function AllData({ user_id }) {
                 endDate={endDate}
                 minDate={startDate}
                 placeholderText="End Date"
-                className="p-2 border border-gray-300 rounded text-black w-full"
+                className="input"
               />
               <Calendar
                 size={16}
@@ -371,17 +375,10 @@ export default function AllData({ user_id }) {
         {/* Sort and buttons row */}
         <div className="flex flex-col md:flex-row justify-between gap-4">
           <div className="flex items-center gap-2">
-            <button
-              type="submit"
-              className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition"
-            >
+            <button type="submit" className="btn">
               Search
             </button>
-            <button
-              type="button"
-              onClick={resetFilters}
-              className="bg-purple-100 text-black px-4 py-2 rounded hover:bg-purple-200 transition"
-            >
+            <button type="button" onClick={resetFilters} className="btn">
               Reset Filters
             </button>
           </div>
@@ -391,7 +388,7 @@ export default function AllData({ user_id }) {
             <select
               value={sortOrder}
               onChange={handleSortChange}
-              className="p-2 border border-gray-300 rounded text-black"
+              className="input"
             >
               <option value="desc">Newest First</option>
               <option value="asc">Oldest First</option>
@@ -400,7 +397,6 @@ export default function AllData({ user_id }) {
         </div>
       </form>
 
-      {loading && <p className="text-center py-4">Loading data...</p>}
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           <p>Error: {error}</p>
@@ -419,7 +415,7 @@ export default function AllData({ user_id }) {
                   <div
                     key={i}
                     onClick={() => setSelectedItem(item)}
-                    className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition cursor-pointer relative"
+                    className="card bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition cursor-pointer relative"
                   >
                     {item.image && (
                       <div className="h-48 overflow-hidden">
@@ -590,7 +586,7 @@ export default function AllData({ user_id }) {
                   <textarea
                     value={deleteReason}
                     onChange={(e) => setDeleteReason(e.target.value)}
-                    className="w-full border border-gray-300 rounded p-2 text-black"
+                    className="input"
                     rows="3"
                     placeholder="Please provide a reason for deleting this article..."
                     required

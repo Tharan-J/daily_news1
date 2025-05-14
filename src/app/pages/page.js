@@ -1,11 +1,20 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Home, Upload, LogOut, FileText, UserCheck, Newspaper } from "lucide-react";
+import {
+  Home,
+  Upload,
+  LogOut,
+  FileText,
+  UserCheck,
+  Newspaper,
+  BookOpen,
+} from "lucide-react";
 import PageContent from "../component/UploadPage";
 import AllData from "../component/ShowContent";
 import PendingNews from "../component/PendingNews";
 import AdminApproval from "../component/AdminApproval";
 import EditorialPage from "../component/EditorialPage";
+import GeneratedPDFs from "../component/GeneratedPDFs";
 import { useSearchParams, useRouter } from "next/navigation";
 
 export default function PageWithSidebar() {
@@ -24,7 +33,7 @@ export default function PageWithSidebar() {
       // In a real app, you would check against your authentication system
       setIsAdmin(user_id.toLowerCase().includes("admin"));
     };
-    
+
     checkAdminStatus();
   }, [user_id]);
 
@@ -47,12 +56,20 @@ export default function PageWithSidebar() {
         return <PendingNews user_id={user_id} />;
       case "editorial":
         return <EditorialPage user_id={user_id} />;
+      case "generated-pdfs":
+        return <GeneratedPDFs />;
       case "admin":
-        return isAdmin ? <AdminApproval user_id={user_id} /> : (
+        return isAdmin ? (
+          <AdminApproval user_id={user_id} />
+        ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center p-8 bg-red-50 rounded-lg border border-red-200 max-w-md">
-              <h2 className="text-xl font-semibold text-red-700 mb-2">Access Denied</h2>
-              <p className="text-gray-700">You don't have permission to access the admin area.</p>
+              <h2 className="text-xl font-semibold text-red-700 mb-2">
+                Access Denied
+              </h2>
+              <p className="text-gray-700">
+                You don't have permission to access the admin area.
+              </p>
             </div>
           </div>
         );
@@ -72,61 +89,77 @@ export default function PageWithSidebar() {
       <aside className="w-20 bg-gray-100 flex flex-col items-center justify-center py-4 space-y-6 shadow-lg">
         <button
           onClick={() => setActive("dashboard")}
-          className={`p-2 rounded-lg transition-colors text-black ${
-            active === "dashboard" ? "bg-purple-200" : "hover:bg-purple-100"
-          }`}
+          className={`p-2 rounded-lg transition-colors bg-gray-100`}
           title="Dashboard"
         >
-          <Home size={24} />
+          <Home
+            size={24}
+            color={active === "dashboard" ? "var(--primary)" : "#888"}
+          />
         </button>
         <button
           onClick={() => setActive("upload")}
-          className={`p-2 rounded-lg transition-colors text-black ${
-            active === "upload" ? "bg-purple-200" : "hover:bg-purple-100"
-          }`}
+          className={`p-2 rounded-lg transition-colors bg-gray-100`}
           title="Upload News"
         >
-          <Upload size={24} />
+          <Upload
+            size={24}
+            color={active === "upload" ? "var(--primary)" : "#888"}
+          />
         </button>
         <button
           onClick={() => setActive("submissions")}
-          className={`p-2 rounded-lg transition-colors text-black ${
-            active === "submissions" ? "bg-purple-200" : "hover:bg-purple-100"
-          }`}
+          className={`p-2 rounded-lg transition-colors bg-gray-100`}
           title="My Submissions"
         >
-          <FileText size={24} />
+          <FileText
+            size={24}
+            color={active === "submissions" ? "var(--primary)" : "#888"}
+          />
         </button>
         {isAdmin && (
           <>
             <button
               onClick={() => setActive("editorial")}
-              className={`p-2 rounded-lg transition-colors text-black ${
-                active === "editorial" ? "bg-purple-200" : "hover:bg-purple-100"
-              }`}
+              className={`p-2 rounded-lg transition-colors bg-gray-100`}
               title="Magazine Editorial"
             >
-              <Newspaper size={24} />
+              <Newspaper
+                size={24}
+                color={active === "editorial" ? "var(--primary)" : "#888"}
+              />
+            </button>
+            <button
+              onClick={() => setActive("generated-pdfs")}
+              className={`p-2 rounded-lg transition-colors bg-gray-100`}
+              title="Generated PDFs"
+            >
+              <BookOpen
+                size={24}
+                color={active === "generated-pdfs" ? "var(--primary)" : "#888"}
+              />
             </button>
             <button
               onClick={() => setActive("admin")}
-              className={`p-2 rounded-lg transition-colors text-black ${
-                active === "admin" ? "bg-purple-200" : "hover:bg-purple-100"
-              }`}
+              className={`p-2 rounded-lg transition-colors bg-gray-100`}
               title="Admin Approval"
             >
-              <UserCheck size={24} />
+              <UserCheck
+                size={24}
+                color={active === "admin" ? "var(--primary)" : "#888"}
+              />
             </button>
           </>
         )}
         <button
           onClick={() => setActive("logout")}
-          className={`p-2 rounded-lg transition-colors text-black ${
-            active === "logout" ? "bg-purple-200" : "hover:bg-purple-100"
-          }`}
+          className={`p-2 rounded-lg transition-colors bg-gray-100`}
           title="Logout"
         >
-          <LogOut size={24} />
+          <LogOut
+            size={24}
+            color={active === "logout" ? "var(--primary)" : "#888"}
+          />
         </button>
       </aside>
       <main className="flex-1 bg-white overflow-auto">{renderContent()}</main>

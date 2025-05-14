@@ -37,8 +37,8 @@ instructions:
         `,
       prompt: JSON.stringify(prompt),
     });
-    
-    return NextResponse.json( object );
+
+    return NextResponse.json(object);
   } catch (error) {
     console.error("Error generating content:", error);
     return NextResponse.json(

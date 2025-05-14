@@ -17,7 +17,7 @@ export default function FlipbookPage() {
           throw new Error("No PDF path provided");
         }
 
-        const response = await fetch("/api/heyzine", {
+        const response = await fetch("/api/flipbook", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -57,9 +57,9 @@ export default function FlipbookPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">
+        <div className="flex flex-col items-center gap-4">
+          <div className="loading-spinner"></div>
+          <p className="text-gray-600">
             Converting your magazine to flipbook...
           </p>
         </div>
@@ -72,10 +72,7 @@ export default function FlipbookPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">Error: {error}</p>
-          <button
-            onClick={() => window.history.back()}
-            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition"
-          >
+          <button onClick={() => window.history.back()} className="btn">
             Go Back
           </button>
         </div>
@@ -89,7 +86,7 @@ export default function FlipbookPage() {
         {!iframeLoaded && (
           <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+              <div className="loading-spinner"></div>
               <p className="mt-4 text-gray-600">Loading flipbook...</p>
             </div>
           </div>

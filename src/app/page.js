@@ -41,7 +41,7 @@ export default function Login() {
     <div className="flex items-center justify-center min-h-screen bg-white">
       <form
         onSubmit={handleSubmit}
-        className="bg-gray-50 shadow-lg rounded-xl p-10 w-full max-w-md min-h-[500px] flex flex-col justify-center"
+        className="card p-10 w-full max-w-md min-h-[500px] flex flex-col justify-center"
       >
         <h1 className="text-3xl font-bold mb-6 text-center text-black">
           Login
@@ -52,7 +52,7 @@ export default function Login() {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full mb-4 px-4 py-2 border border-gray-300 rounded text-black focus:outline-none focus:ring-2 focus:ring-purple-400"
+          className="input w-full mb-4"
           required
         />
 
@@ -61,16 +61,12 @@ export default function Login() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full mb-6 px-4 py-2 border border-gray-300 rounded text-black focus:outline-none focus:ring-2 focus:ring-purple-400"
+          className="input w-full mb-6"
           required
         />
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded transition-colors"
-        >
-          {loading ? "Loading..." : "Login"}
+        <button type="submit" disabled={loading} className="btn w-full">
+          {loading ? <div className="loading-spinner"></div> : "Login"}
         </button>
 
         <div className="my-6 text-center text-gray-500">or</div>
@@ -78,7 +74,7 @@ export default function Login() {
         <button
           type="button"
           onClick={handleGoogleLogin}
-          className="flex items-center justify-center gap-2 w-full border border-gray-300 py-2 rounded hover:bg-gray-100 text-black"
+          className="btn flex items-center justify-center gap-2 w-full border border-gray-300"
         >
           <FcGoogle size={20} />
           <span>Login with Google</span>

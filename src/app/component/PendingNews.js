@@ -69,7 +69,7 @@ export default function PendingNews({ user_id }) {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+        <div className="loading-spinner"></div>
       </div>
     );
   }
@@ -86,18 +86,20 @@ export default function PendingNews({ user_id }) {
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6 text-gray-800">My Submissions</h1>
       
-      <div className="mb-4 relative">
-        <div className="flex items-center border rounded-lg overflow-hidden bg-white">
-          <div className="pl-3">
-            <Search size={20} className="text-gray-400" />
+      <div className="card p-6 mb-4">
+        <div className="mb-4 relative">
+          <div className="flex items-center border rounded-lg overflow-hidden bg-white">
+            <div className="pl-3">
+              <Search size={20} className="text-gray-400" />
+            </div>
+            <input
+              type="text"
+              className="input"
+              placeholder="Search by title or content..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
-          <input
-            type="text"
-            className="w-full p-2 outline-none text-sm text-gray-700"
-            placeholder="Search by title or content..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
         </div>
       </div>
 

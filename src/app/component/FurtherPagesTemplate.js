@@ -1,241 +1,186 @@
 const FurtherPagesTemplate = {
   baseHtml: `
-     <!DOCTYPE html>
- <html>
-   <head>
-     <title>BITSATHY DailyNews</title>
-     <style>
-       body {
-         font-family: "Times New Roman", Times, serif;
-         margin: 0;
-         padding: 0;
-         background-color: #f9f9f9;
-         height: 100%;
-         overflow: hidden;
-         position: relative;
-       }
- 
-       .page {
-         height: 297mm;
-         width: 210mm;
-         margin: 0;
-         padding: 25px 1px 60px 1px;
-         position: relative;
-         box-sizing: border-box;
-         overflow: hidden;
-       }
+    <!DOCTYPE html>
+<html>
+  <head>
+    <title>BITSATHY DailyNews</title>
+    <style>
+      @page {
+        size: A4;
+        margin: 0;
+      }
+      body {
+        font-family: "Times New Roman", Times, serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+        font-size: 18px;
+      }
+      table.page-table {
+        width: 210mm;
+        height: 297mm;
+        margin: 0 auto;
+        border-collapse: collapse;
+        background: #f9f9f9;
+        page-break-after: always;
+      }
+      td.header-cell, td.footer-cell {
+        padding: 0;
+        vertical-align: top;
+      }
+      td.content-cell {
+        padding: 18px 24px 18px 24px;
+        vertical-align: top;
+        height: 100%;
+      }
+      .header-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        margin-top: 18px;
+        padding: 0 24px 0 24px;
+        width: calc(100% - 48px);
+      }
+      .page-number-box {
+        border: 2px solid #006666;
+        padding: 2px 14px;
+        font-weight: bold;
+        color: black;
+        background: #fff;
+        min-width: 40px;
+        min-height: 32px;
+        text-align: center;
+        margin-left: 18px;
+        font-size: 20px;
+        box-sizing: border-box;
+        order: 2;
+      }
+      .header-line {
+        flex: 1;
+        border-top: 2.5px solid #006666;
+        height: 0;
+        margin: 0;
+      }
+      .section-title {
+        background-color: #b8d1f3;
+        border: 3px solid #7898c6;
+        text-align: center;
+        padding: 10px;
+        font-size: 24px;
+        color: #00005a;
+        font-weight: bold;
+        margin: 24px 24px 24px 24px;
+      }
+      .news-title {
+        color: #00005a;
+        font-size: 28px;
+        margin: 15px 0 10px 0;
+        font-weight: bold;
+      }
+      .news-item {
+        margin-bottom: 28px;
+        display: block;
+        break-inside: avoid;
+        page-break-inside: avoid;
+        clear: both;
+      }
+      .news-row {
+        display: block;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      .news-row .news-image {
+        float: left;
+        width: 220px;
+        height: 150px;
+        margin: 0 18px 12px 0;
+      }
+      .news-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border: 1px solid #999;
+      }
+      .news-text {
+        text-align: justify;
+        font-size: 18px;
+        line-height: 1.7;
+      }
+      .news-caption {
+        font-size: 10px;
+        text-align: center;
+        font-style: italic;
+        color: #555;
+        margin-top: 4px;
+      }
+      .news-ref {
+        font-size: 12px;
+        color: #555;
+        text-align: right;
+      }
+      .clearfix::after {
+        content: "";
+        display: table;
+        clear: both;
+      }
+      .footer-line {
+        margin: 30px 24px 0 24px;
+        width: calc(100% - 48px);
+        border-top: 2px solid #006666;
+      }
+      .footer-text {
+        font-weight: bold;
+        color: white;
+        background-color: #006666;
+        padding: 5px 15px;
+        margin: 8px 24px 8px 0;
+        display: inline-block;
+        float: right;
+      }
+    </style>
+  </head>
+  <body>
+    <table class="page-table">
+      <tr>
+        <td class="header-cell">
+          <div class="header-row">
+            <div class="header-line"></div>
+            <div class="page-number-box">{{PAGE_NUMBER}}</div>
+          </div>
+          <div class="section-title">{{SECTION_TITLE}}</div>
+        </td>
+      </tr>
+      <tr>
+        <td class="content-cell">
+          {{NEWS_ITEMS}}
+        </td>
+      </tr>
+      <tr>
+        <td class="footer-cell">
+          <div class="footer-line"></div>
+          <div class="footer-text">BITSATHY DailyNews</div>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+`,
 
-       .content {
-         padding: 22px;
-         height: calc(100% - 180px);
-         overflow: hidden;
-       }
-       
-       .page-number-box {
-         position: absolute;
-         top: 10px;
-         right: 30px;
-         border: 2px solid #006666;
-         padding: 2px 8px;
-         font-weight: bold;
-         color: black;
-         z-index: 2;
-         font-size: 18px;
-       }
- 
-       .header-line {
-         position: absolute;
-         top: 37px; 
-         left: 2.5%;
-         width: 95%;
-         border-top: 2.5px solid #006666;
-       }
- 
-       .footer-line {
-         border-top: 2px solid #006666;
-         position: absolute;
-         bottom: 35px;
-         left: 2.5%;
-         width: 95%;
-       }
- 
-       .section-title {
-         background-color: #b8d1f3;
-         border: 3px solid #7898c6;
-         text-align: center;
-         padding: 15px;
-         font-size: 32px;
-         color: #00005a;
-         font-weight: bold;
-         margin: 25px 0;
-       }
- 
-       .news-title {
-         color: #00005a;
-         font-size: 26px;
-         margin: 15px 0 12px 0;
-         line-height: 1.2;
-       }
- 
-       .news-item {
-         margin-bottom: 25px;
-         page-break-inside: avoid;
-         break-inside: avoid;
-       }
- 
-       .news-content {
-         position: relative;
-         overflow: hidden;
-       }
- 
-       .news-image {
-         width: 300px;
-         height: auto;
-         border: 1px solid #999;
-         margin: 0 20px 15px 0;
-         float: left;
-         shape-outside: margin-box;
-       }
- 
-       .news-row-reverse .news-image {
-         float: right;
-         margin: 0 0 15px 20px;
-       }
- 
-       .news-text {
-         text-align: justify;
-         font-size: 18px;
-         line-height: 1.6;
-         margin-bottom: 10px;
-         overflow: visible;
-       }
- 
-       .news-text p {
-         margin: 0 0 15px 0;
-       }
- 
-       .news-caption {
-         font-size: 14px;
-         text-align: center;
-         font-style: italic;
-         color: #555;
-         margin-top: 8px;
-         clear: both;
-       }
- 
-       .news-ref {
-         font-size: 16px;
-         color: #555;
-         text-align: right;
-         margin-top: 15px;
-         font-style: italic;
-         clear: both;
-       }
- 
-       .footer-text {
-         font-weight: bold;
-         color: white;
-         background-color: #006666;
-         padding: 8px 20px;
-         position: absolute;
-         bottom: 4px;
-         right: 30px;
-         font-size: 18px;
-       }
-
-       @media print {
-         @page {
-           size: A4;
-           margin: 0;
-         }
-         
-         body {
-           width: 210mm;
-           height: 297mm;
-           margin: 0;
-           -webkit-print-color-adjust: exact;
-           print-color-adjust: exact;
-         }
-         
-         .page {
-           width: 100%;
-           height: 100%;
-           box-sizing: border-box;
-           overflow: hidden;
-         }
-
-         .content {
-           padding: 22px;
-           height: calc(100% - 180px);
-           overflow: hidden;
-         }
-
-         .news-item {
-           page-break-inside: avoid;
-           break-inside: avoid;
-         }
-
-         .news-text {
-           font-size: 18px;
-           line-height: 1.6;
-         }
-
-         .news-title {
-           font-size: 26px;
-           margin-bottom: 15px;
-         }
-
-         .news-image {
-           width: 300px;
-         }
-       }
-     </style>
-   </head>
-   <body>
-     <div class="page-number-box">{{PAGE_NUMBER}}</div>
-     <div class="header-line"></div>
-     <div class="page">
-       <div class="content">
-         <div class="section-title">{{SECTION_TITLE}}</div>
- 
-         <!-- News item with image on left -->
-         <div class="news-item">
-           <div class="news-title">{{NEWS_TITLE_2}}</div>
-           <div class="news-content">
-             <img
-               src="{{NEWS_IMAGE_SRC_2}}"
-               alt="{{NEWS_IMAGE_ALT_2}}"
-               class="news-image"
-             />
-             <div class="news-text">
-               {{NEWS_DESCRIPTION_2}}
-               <span class="news-ref">{{NEWS_REF_2}}</span>
-             </div>
-           </div>
-         </div>
- 
-         <!-- News item with image on right -->
-         <div class="news-item">
-           <div class="news-title">{{NEWS_TITLE_3}}</div>
-           <div class="news-content">
-             <img
-               src="{{NEWS_IMAGE_SRC_3}}"
-               alt="{{NEWS_IMAGE_ALT_3}}"
-               class="news-image"
-             />
-             <div class="news-text">
-               {{NEWS_DESCRIPTION_3}}
-               <span class="news-ref">{{NEWS_REF_3}}</span>
-             </div>
-           </div>
-         </div>
-       </div>
-     </div>
-     <div class="footer-line"></div>
-     <div class="footer-text">BITSATHY DailyNews</div>
-   </body>
- </html>
- `,
+  // Template for a single news item with image on left
+  newsItemTemplate: `
+    <div class="news-item clearfix">
+      <div class="news-title">{{NEWS_TITLE}}</div>
+      <div class="news-row">
+        <div class="news-image">
+          <img src="{{NEWS_IMAGE_SRC}}" alt="{{NEWS_IMAGE_ALT}}" />
+        </div>
+        <div class="news-text">
+          {{NEWS_DESCRIPTION}}
+          <span class="news-ref">{{NEWS_REF}}</span>
+        </div>
+      </div>
+    </div>
+  `,
 };
 
 export default FurtherPagesTemplate;

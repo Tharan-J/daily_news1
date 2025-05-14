@@ -42,9 +42,9 @@ export async function POST(request) {
 
       // Check if user is admin (user_id equals "admin")
       const isAdmin = uploaded_by === "admin";
-      
+
       // Set status based on user role
-      const status = isAdmin ? 'approved' : 'pending';
+      const status = isAdmin ? "approved" : "pending";
 
       // Current date for all entries
       const currentDate = new Date().toISOString().split("T")[0];
@@ -55,7 +55,7 @@ export async function POST(request) {
       for (let i = 0; i < entriesData.length; i++) {
         const entry = entriesData[i];
 
-        // Validate entry data - only require title now
+        // Validate entry data - require title and category
         if (!entry.title) {
           return NextResponse.json(
             {
@@ -65,6 +65,9 @@ export async function POST(request) {
             { status: 400 }
           );
         }
+
+        // Get category (default to "other" if not provided)
+        const category = entry.category || "other";
 
         // Process image if it exists for this entry
         let imageBuffer = null;
@@ -78,29 +81,35 @@ export async function POST(request) {
           }
         }
 
-        // Insert data into the news table with status based on user role
+        // Insert data into the news table with category field
         const [result] = await connection.execute(
-          "INSERT INTO news (date, title, image, content, uploaded_by, status, submitted_at) VALUES (?, ?, ?, ?, ?, ?, NOW())",
+          "INSERT INTO news (date, title, image, content, uploaded_by, status, submitted_at, category) VALUES (?, ?, ?, ?, ?, ?, NOW(), ?)",
           [
             currentDate,
             entry.title,
             imageBuffer,
             entry.content || "",
             uploaded_by,
-            status, // Use the dynamic status here
+            status,
+            category,
           ]
         );
 
         results.push({
           id: result.insertId,
           title: entry.title,
-          status: status, // Return the actual status
+          status: status,
+          category: category,
         });
       }
 
       return NextResponse.json({
         success: true,
-        message: `Successfully ${status === 'approved' ? 'published' : 'submitted for review'}! ${results.length} entries ${status === 'approved' ? 'added to news feed' : 'pending approval'}.`,
+        message: `Successfully ${
+          status === "approved" ? "published" : "submitted for review"
+        }! ${results.length} entries ${
+          status === "approved" ? "added to news feed" : "pending approval"
+        }.`,
         results: results,
       });
     } else {
@@ -108,7 +117,13 @@ export async function POST(request) {
       const data = await request.json();
 
       // Extract data from the request
-      const { title, content, uploaded_by, imageBase64 } = data;
+      const {
+        title,
+        content,
+        uploaded_by,
+        imageBase64,
+        category = "other",
+      } = data;
 
       // Validate required fields
       if (!title || !uploaded_by) {
@@ -120,9 +135,9 @@ export async function POST(request) {
 
       // Check if user is admin (user_id equals "admin")
       const isAdmin = uploaded_by === "admin";
-      
+
       // Set status based on user role
-      const status = isAdmin ? 'approved' : 'pending';
+      const status = isAdmin ? "approved" : "pending";
 
       // Convert base64 image to buffer if it exists
       let imageBuffer = null;
@@ -134,19 +149,29 @@ export async function POST(request) {
       // Current date for the date field
       const currentDate = new Date().toISOString().split("T")[0];
 
-      // Insert data into the news table with status based on user role
+      // Insert data into the news table with category field
       const [result] = await connection.execute(
-        "INSERT INTO news (date, title, image, content, uploaded_by, status, submitted_at) VALUES (?, ?, ?, ?, ?, ?, NOW())",
-        [currentDate, title, imageBuffer, content || "", uploaded_by, status]
+        "INSERT INTO news (date, title, image, content, uploaded_by, status, submitted_at, category) VALUES (?, ?, ?, ?, ?, ?, NOW(), ?)",
+        [
+          currentDate,
+          title,
+          imageBuffer,
+          content || "",
+          uploaded_by,
+          status,
+          category,
+        ]
       );
 
       return NextResponse.json({
         success: true,
-        message: status === 'approved' 
-          ? "Document published successfully!" 
-          : "Document submitted for review!",
+        message:
+          status === "approved"
+            ? "Document published successfully!"
+            : "Document submitted for review!",
         id: result.insertId,
         status: status,
+        category: category,
       });
     }
   } catch (error) {
